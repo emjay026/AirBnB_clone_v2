@@ -8,34 +8,30 @@ if ! (command -v nginx >/dev/null 2>&1); then
 fi
 
 # directory creation
-mkdir -p /data/web_static/releases/test/
-mkdir -p /data/web_static/shared/
+sudo mkdir -p /data/web_static/releases/test/
+sudo mkdir -p /data/web_static/shared/
 
 # creating new index.html file
 echo -e "Hello Web Static!" > /data/web_static/releases/test/index.html
 
 # create the symbolic link
 if [ -L /data/web_static/current ]; then
-    rm /data/web_static/current
+    sudo rm /data/web_static/current
 fi
 
-ln -s /data/web_static/releases/test /data/web_static/current
+sudo ln -s /data/web_static/releases/test /data/web_static/current
 
 # change of ownership and group to current user
 sudo chown -R ubuntu:ubuntu /data/
 
 # update the Nginx configuration to service specified content
-position_pattern="/^\tlocation \/hbnb_static {/"
-match_pattern='^\s*root\s\+\S\+'
-directive=$'\t\talias /data/web_static/current;'
+position_pattern='^\tlocation \/ {'
 nginx_conf_file="/etc/nginx/sites-available/default"
+directive="location \/hbnb_static {\n\t\talias \/data\/web_static\/current;"
 
-if ! grep -q "$directive" "$nginx_conf_file"; then
-    if grep -q "$match_pattern" "$nginx_conf_file"; then
-        sed -i "$position_pattern"',/^\s*}/ s|'"${match_pattern}|${directive}|" "$nginx_conf_file"
-    else
-        sed -i "$position_pattern"'a\ '"$directive" "$nginx_conf_file"
-    fi
+# Use grep to search for the directive in the nginx configuration file
+if ! grep -qF "hbnb_static" "$nginx_conf_file"; then
+    sed -i -e "/$position_pattern/{:1; /}/!{N;b1}; s|}|&\\n\t${directive}\n\t}|}" "$nginx_conf_file"
 fi
 
 # restart nginx
