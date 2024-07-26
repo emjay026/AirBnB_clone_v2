@@ -29,5 +29,10 @@ def python_text(text):
     return f"Python {text}"
 
 
+@app.route('/number/<int:n>', strict_slashes=False)
+def number_n(n):
+    return f"{n} is a number"
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
