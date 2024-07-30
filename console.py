@@ -119,7 +119,7 @@ class HBNBCommand(cmd.Cmd):
 
     def parse_value(self, str):
         """Converts a string representation to it's value."""
-        if str.isdigit() and self.is_integer(str):
+        if self.is_integer(str):
             return int(str)
         elif str.count('.') == 1 and self.is_float(str):
             return float(str)
