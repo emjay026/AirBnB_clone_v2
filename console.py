@@ -1,15 +1,9 @@
 #!/usr/bin/python3
 """ Console Module """
 import cmd
+import re
 import sys
-from models.base_model import BaseModel
-from models.__init__ import storage
-from models.user import User
-from models.place import Place
-from models.state import State
-from models.city import City
-from models.amenity import Amenity
-from models.review import Review
+from models import classes, storage
 
 
 class HBNBCommand(cmd.Cmd):
@@ -18,11 +12,6 @@ class HBNBCommand(cmd.Cmd):
     # determines prompt for interactive/non-interactive modes
     prompt = '(hbnb) ' if sys.__stdin__.isatty() else ''
 
-    classes = {
-               'BaseModel': BaseModel, 'User': User, 'Place': Place,
-               'State': State, 'City': City, 'Amenity': Amenity,
-               'Review': Review
-              }
     dot_cmds = ['all', 'count', 'show', 'destroy', 'update']
     types = {
              'number_rooms': int, 'number_bathrooms': int,
@@ -113,13 +102,28 @@ class HBNBCommand(cmd.Cmd):
         """ Overrides the emptyline method of CMD """
         pass
 
+    def is_float(self, value):
+        """"""
+        float_regex = re.compile(r'^-?\d+(\.\d+)?([eE][-+]?\d+)?$')
+        return bool(float_regex.match(value))
+
+    def is_integer(self, value):
+        """"""
+        integer_regex = re.compile(r'^-?\d+$')
+        return bool(integer_regex.match(value))
+
+    def is_string(self, value):
+        """"""
+        string_regex = re.compile(r'^[a-zA-Z0-9_]+$')
+        return bool(string_regex.match(value))
+
     def parse_value(self, str):
         """Converts a string representation to it's value."""
-        if str.isdigit():
+        if str.isdigit() and self.is_integer(str):
             return int(str)
-        elif str.count('.') == 1:
+        elif str.count('.') == 1 and self.is_float(str):
             return float(str)
-        elif str[0] == '"':
+        elif str[0] == '"' and self.is_string(str):
             new_str = str[1:len(str)-1]
             new_str = new_str.replace('"', '\"')
             new_str = new_str.replace("_", " ")
@@ -142,13 +146,13 @@ class HBNBCommand(cmd.Cmd):
         args_list = args.split(" ")
         command = args_list[0]
 
-        if command not in HBNBCommand.classes:
+        if command not in classes:
             print("** class doesn't exist **")
             return
 
         params_dict = self.parse_to_dict(args_list[1:])
 
-        new_instance = HBNBCommand.classes[command]()
+        new_instance = classes[command]()
         storage.save()
 
         for key, val in params_dict.items():
