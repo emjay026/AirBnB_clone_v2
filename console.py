@@ -123,7 +123,7 @@ class HBNBCommand(cmd.Cmd):
             return int(str)
         elif str.count('.') == 1 and self.is_float(str):
             return float(str)
-        elif str[0] == '"' and self.is_string(str):
+        elif str[0] == '"':
             new_str = str[1:len(str)-1]
             new_str = new_str.replace('"', '\"')
             new_str = new_str.replace("_", " ")
